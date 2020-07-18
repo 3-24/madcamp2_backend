@@ -3,6 +3,7 @@ var express = require('express')
 var bodyParser = require('body-parser')
 var path = require('path')
 var app = express();
+var google_auth = require('./google_auth');
 
 app.use(bodyParser.urlencoded({extended : true}));
 app.use(bodyParser.json());
@@ -13,16 +14,15 @@ app.use(function(req,res,next){
 	next();
 });
 
-//var router = express.Router();
 
-app.get('/api', function(req,res) {
-	res.json({message: 'Welcome to madcamp2_backend'});
-	console.log("request accepted");
+app.post('/google_signin', function(req,res) {
+	console.log(req.body.idToken);
+	google_auth(req.body);
 });
 
 
 
 //app.use('api', router);
 app.listen(80, "0.0.0.0", function(){
-	console.log("Express server has started on port 5000");
+	console.log("Express server has started on port 80");
 });
