@@ -50,6 +50,25 @@ app.post('/anon_signup', function(req,res) {
 	);
 });
 
+app.post('/anon_signin', function(req,res) {
+	var email = req.body.email;
+	var password = req.body.password;
+	connection.query('SELECT * FROM accounts WHERE email=? AND password=?', [email, password],
+		function(error, results, fields){
+			if (error){
+				res.send({"code": 400, "failed": "error occurred"});
+			} else {
+				if (results.length > 0){
+					res.send({"code": 200, "success": "login success"});
+				} else {
+					res.send({"code": 300, "failed": "No account"})
+				}
+			}
+		}
+	);
+});
+
+
 app.post('/google_signup', function(req,res) {
 	console.log(req.body.idToken);
 	var email = google_auth(req.body);
@@ -57,8 +76,20 @@ app.post('/google_signup', function(req,res) {
 });
 
 app.post('/google_signin', function(req,res) {
-	//console.log(req.body.idToken);
 	var email = google_auth(req.body);
+	connection.query('SELECT * FROM accounts WHERE email=?', [email],
+	function(error, results, fields){
+		if (error){
+			res.send({"code": 400, "failed": "error occurred"});
+		} else {
+			if (results.length > 0){
+				res.send({"code": 200, "success": "login success"});
+			} else {
+				res.send({"code": 300, "failed": "No account"})
+			}
+		}
+	}
+);
 });
 
 app.get('/', function(req,res){
