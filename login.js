@@ -6,6 +6,8 @@ var app = express();
 var google_auth = require('./google_auth');
 
 var mysql = require('mysql');
+var multer = require('multer');
+var upload = multer({dest: 'uploads'});	
 
 var connection = mysql.createConnection({
 	host: 'localhost',
@@ -91,6 +93,12 @@ app.post('/google_signin', function(req,res) {
 	}
 );
 });
+
+
+app.post('/mainSubmit', upload.single('photo'), function(req,res){
+	console.log(req.file);
+});
+
 
 app.get('/', function(req,res){
 	res.json({'message':'Welcome to madcamp2 backend server!'});
