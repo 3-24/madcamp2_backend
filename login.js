@@ -1,7 +1,6 @@
 var mysql = require('mysql')
 var express = require('express')
 var bodyParser = require('body-parser')
-var path = require('path')
 var app = express();
 var google_auth = require('./google_auth');
 var path = require('path');
@@ -33,7 +32,8 @@ var storage = multer.diskStorage({
 			default:
 				mimeType = "jpg";
 		}
-		cb(null, file.fieldname + mimeType);
+		const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
+		cb(null, uniqueSuffix +'.'+ mimeType);
 	}
 });
 
@@ -120,15 +120,24 @@ app.post('/profile/get', function(req,res){
 	});
 });
 
-app.post('/profile/set', upload.single('photo'), function(req,res)){
-	
-}
-
-
-app.post('/mainSubmit', upload.single('photo'), function(req,res){
-	console.log(req.file);
+app.post('/profile/set', function(req,res){
+	var email = req.body.email;
+	var nickname = req.body.nickname;
+	var profile_photo = req.body.profile_photo;
+	var intro = req.body.intro;
+	connection.query('UPDATE accounts SET nickname=? profile_photo=? intro=? WHERE email=?',
+		[nickname, profile_photo, intro, email],
+		function(error, results, fields){
+			if (error){
+				console.log(error);
+				res.send({"code":400, "message":"Profile updated failed"});
+			} else {res.send({"code":200, "message":"Profile updated successfully"})}
+		});
 });
 
+app.post('/image_upload', upload.single('image'), function(req,res){
+	res.send({"code":400, "name":req.file.filename});
+})
 
 app.get('/', function(req,res){
 	res.json({'message':'Welcome to madcamp2 backend server!'});
