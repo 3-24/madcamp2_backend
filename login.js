@@ -137,7 +137,7 @@ app.post('/profile/set', function(req,res){
 });
 
 app.post('/image_upload', upload.single('image'), function(req,res){
-	res.send({"code":400, "name":req.file.filename});
+	res.send({"code":200, "name":req.file.filename});
 })
 
 app.post('/post/add', function(req,res){
@@ -146,8 +146,8 @@ app.post('/post/add', function(req,res){
 	var content = req.content;
 	var date = new Date().toISOString().slice(0, 19).replace('T', ' ');
 	var photo1 = req.photo1;
-	var photo2 = req.photo2;
-	var photo3 = req.photo3;
+	var photo2 = null;
+	var photo3 = null;
 	connection.query("INSERT INTO posts (email, title, content, date, photo1, photo2, photo3) VALUES ?",
 		[email, title, content, date, photo1, photo2, photo3],
 		function(error, results, fields){
