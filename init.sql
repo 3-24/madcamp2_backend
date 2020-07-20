@@ -20,6 +20,6 @@ CREATE TABLE IF NOT EXISTS `posts` (
 );
 
 CREATE TABLE IF NOT EXISTS `friends` (
-  `self` varchar(127) NOT NULL,
+  `me` varchar(127) NOT NULL,
   `target` varchar(127) NOT NULL
 )

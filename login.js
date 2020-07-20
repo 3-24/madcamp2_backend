@@ -141,11 +141,11 @@ app.post('/image_upload', upload.single('image'), function(req,res){
 })
 
 app.post('/post/add', function(req,res){
-	var email = req.email;
-	var title = req.title;
-	var content = req.content;
+	var email = req.body.email;
+	var title = req.body.title;
+	var content = req.body.content;
 	var date = new Date().toISOString().slice(0, 19).replace('T', ' ');
-	var photo1 = req.photo1;
+	var photo1 = req.body.photo1;
 	var photo2 = null;
 	var photo3 = null;
 	connection.query("INSERT INTO posts (email, title, content, date, photo1, photo2, photo3) VALUES ?",
@@ -159,6 +159,62 @@ app.post('/post/add', function(req,res){
 		)
 });
 
+
+app.post('/friend/add', function(req,res){
+	var me = req.body.email;
+	var target = req.body.targetEmail;
+	connection.query('SELECT * FROM friends WHERE me=? AND target=?',[me, target],
+		function(error, results, fields){
+			if (error || results.length > 0){
+				res.send({"code":400, "message": "Some error ocurred1"});
+			} else {
+				connection.query('INSERT INTO friends SET ?',
+				{"me":me, "target":target},
+				function(_error, _results, _fields){
+					if (_error){
+						res.send({"code":400, "message": "Some error ocurred2"});
+					} else {
+						res.send({"code":200, "message": "Friend added successfully"});
+					}
+				}
+				)
+			}
+		}
+	);
+});
+
+app.post('/friend/list', function(req,res){
+	var me = req.body.email;
+	connection.query(`SELECT * FROM friends WHERE me=?`, me,
+		function(error, results, fields){
+			if (error){
+				console.log(error);
+				res.send({"code":400, "message":"Some error occurred"})
+			} else {
+				let array = [];
+				results.forEach(
+					(row)=>{array.push(row.target);}
+				)
+				res.send({"code":200, "friends":array})
+			}
+		}
+	)
+});
+
+app.post('/friend/remove', function(req,res){
+	var me = req.body.email;
+	var target = req.body.targetEmail;
+	connection.query(`DELETE FROM friends WHERE me=? AND target=?`,[me,target],
+		function(error, results, fields){
+			if (error){
+				console.log(error);
+				res.send({"code":400, "message":"fail"});
+			} else {
+				res.send({"code":200, "message":"success"});
+			}
+		}
+	);
+});
 
 
 app.get('/', function(req,res){
