@@ -2,10 +2,24 @@ CREATE DATABASE IF NOT EXISTS `nodelogin` DEFAULT CHARACTER SET utf8 COLLATE utf
 USE `nodelogin`;
 
 CREATE TABLE IF NOT EXISTS `accounts` (
-  `id` int(11) NOT NULL,
+  `email` varchar(127) NOT NULL,
   `password` varchar(255),
-  `email` varchar(100) NOT NULL
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+  `nickname` varchar(127),
+  `profile_photo` varchar(255),
+  `intro` varchar(255)
+);
 
-ALTER TABLE `accounts` ADD PRIMARY KEY (`id`);
-ALTER TABLE `accounts` MODIFY `id` int(11) NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=2;
+CREATE TABLE IF NOT EXISTS `posts` (
+  `email` varchar(127) NOT NULL,
+  `title` varchar(127) NOT NULL,
+  `content` varchar(1023) NOT NULL,
+  `date` DATETIME NOT NULL,
+  `photo1` varchar(255),
+  `photo2` varchar(255),
+  `photo3` varchar(255)
+);
+
+CREATE TABLE IF NOT EXISTS `friends` (
+  `self` varchar(127) NOT NULL,
+  `target` varchar(127) NOT NULL
+)
