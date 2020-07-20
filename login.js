@@ -71,7 +71,8 @@ app.post('/anon_signup', function(req,res) {
 					res.send({"code": 401, "failed":"already exists"});
 				} else {
 					connection.query('INSERT INTO accounts SET ?',
-					{"email":email,"password":password, "nickname":"Crescent Moon", "profile_photo":"default_profile_colored.png", "intro": "Hi! I shaped like a fingernail!"}, function(_error, _results, _fields){
+					{"email":email,"password":password, "nickname":"Crescent Moon", "profile_photo":"default_profile_colored.png", "intro": "Hi! I shaped like a fingernail!"},
+					function(_error, _results, _fields){
 						if (_error){
 							res.send({"code": 402, "failed": "error occurred"});
 						} else {
@@ -138,6 +139,27 @@ app.post('/profile/set', function(req,res){
 app.post('/image_upload', upload.single('image'), function(req,res){
 	res.send({"code":400, "name":req.file.filename});
 })
+
+app.post('/post/add', function(req,res){
+	var email = req.email;
+	var title = req.title;
+	var content = req.content;
+	var date = new Date().toISOString().slice(0, 19).replace('T', ' ');
+	var photo1 = req.photo1;
+	var photo2 = req.photo2;
+	var photo3 = req.photo3;
+	connection.query("INSERT INTO posts (email, title, content, date, photo1, photo2, photo3) VALUES ?",
+		[email, title, content, date, photo1, photo2, photo3],
+		function(error, results, fields){
+			if (error){
+				console.log(error);
+				res.send({"code":400, "message":"Post create failed"});
+			} else {res.send({"code":200, "message": "Post created successfully"})}
+		}
+		)
+});
+
+
 
 app.get('/', function(req,res){
 	res.json({'message':'Welcome to madcamp2 backend server!'});
