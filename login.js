@@ -4,12 +4,40 @@ var bodyParser = require('body-parser')
 var path = require('path')
 var app = express();
 var google_auth = require('./google_auth');
+var path = require('path');
 var mime = require('mime');
 var fs = require('fs');
 
 var mysql = require('mysql');
 var multer = require('multer');
-var upload = multer({dest: 'uploads'});	
+var storage = multer.diskStorage({
+	destination: function (req, file, cb){
+		cb(null, 'uploads')
+	},
+	filename: function (req, file, cb){
+		var mimeType;
+
+		switch (file.mimetype){
+			case "image/jpeg":
+				mimeType = "jpg";
+				break;
+			case "image/png":
+				mimeType = "png";
+				break;
+			case "image/gif":
+				mimeType = "gif";
+				break;
+			case "image/bmp":
+				mimeType = "bmp";
+				break;
+			default:
+				mimeType = "jpg";
+		}
+		cb(null, file.fieldname + mimeType);
+	}
+});
+
+var upload = multer({storage: storage});
 
 var connection = mysql.createConnection({
 	host: 'localhost',
