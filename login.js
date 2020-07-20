@@ -4,6 +4,8 @@ var bodyParser = require('body-parser')
 var path = require('path')
 var app = express();
 var google_auth = require('./google_auth');
+var mime = require('mime');
+var fs = require('fs');
 
 var mysql = require('mysql');
 var multer = require('multer');
@@ -27,6 +29,8 @@ app.use(function(req,res,next){
 	next();
 });
 
+app.use('/image', express.static('uploads'));
+
 app.post('/anon_signup', function(req,res) {
 	var email = req.body.email;
 	var password = req.body.password;
@@ -39,7 +43,7 @@ app.post('/anon_signup', function(req,res) {
 					res.send({"code": 401, "failed":"already exists"});
 				} else {
 					connection.query('INSERT INTO accounts SET ?',
-					{"email":email,"password":password}, function(_error, _results, _fields){
+					{"email":email,"password":password, "nickname":"Crescent Moon", "profile_photo":"default_profile_colored.png", "intro": "Hi! I shaped like a fingernail!"}, function(_error, _results, _fields){
 						if (_error){
 							res.send({"code": 402, "failed": "error occurred"});
 						} else {
@@ -71,28 +75,26 @@ app.post('/anon_signin', function(req,res) {
 });
 
 
-app.post('/google_signup', function(req,res) {
-	console.log(req.body.idToken);
-	var email = google_auth(req.body);
-	console.log(email);
+app.post('/profile/get', function(req,res){
+	var email = req.body.email;
+	connection.query('SELECT * FROM accounts WHERE email=?', [email], function(error, results, fields){
+		if (error || results.length == 0){
+			console.log(error);
+			res.send({"code":400});
+		} else {
+			var result = results[0];
+			var nickname = result.nickname;
+			var profile_photo = result.profile_photo;
+			console.log(profile_photo);
+			var intro = result.intro;
+			res.send({"code":200, "email":email, "nickname": nickname, "profile_photo": profile_photo, "intro":intro})
+		}
+	});
 });
 
-app.post('/google_signin', function(req,res) {
-	var email = google_auth(req.body);
-	connection.query('SELECT * FROM accounts WHERE email=?', [email],
-	function(error, results, fields){
-		if (error){
-			res.send({"code": 400, "failed": "error occurred"});
-		} else {
-			if (results.length > 0){
-				res.send({"code": 200, "success": "login success"});
-			} else {
-				res.send({"code": 300, "failed": "No account"})
-			}
-		}
-	}
-);
-});
+app.post('/profile/set', upload.single('photo'), function(req,res)){
+	
+}
 
 
 app.post('/mainSubmit', upload.single('photo'), function(req,res){
