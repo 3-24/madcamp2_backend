@@ -18,9 +18,11 @@
   },
   "homepage": "https://github.com/3-24/madcamp2_backend#readme",
   "dependencies": {
+    "bluebird": "^3.7.2",
     "express": "^4.17.1",
     "express-session": "^1.17.1",
     "multer": "^1.4.2",
-    "mysql": "^2.18.1"
+    "mysql": "^2.18.1",
+    "mysql2": "^2.1.0"
   }
 }

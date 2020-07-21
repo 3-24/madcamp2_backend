@@ -1,8 +1,7 @@
-var mysql = require('mysql')
+var mysql = require('mysql2/promise')
 var express = require('express')
 var bodyParser = require('body-parser')
 var app = express();
-var google_auth = require('./google_auth');
 var path = require('path');
 var mime = require('mime');
 var fs = require('fs');
@@ -140,26 +139,6 @@ app.post('/image_upload', upload.single('image'), function(req,res){
 	res.send({"code":200, "name":req.file.filename});
 })
 
-app.post('/post/add', function(req,res){
-	var email = req.body.email;
-	var title = req.body.title;
-	var content = req.body.content;
-	var date = new Date().toISOString().slice(0, 19).replace('T', ' ');
-	var photo1 = req.body.photo1;
-	var photo2 = null;
-	var photo3 = null;
-	connection.query("INSERT INTO posts (email, title, content, date, photo1, photo2, photo3) VALUES ?",
-		[email, title, content, date, photo1, photo2, photo3],
-		function(error, results, fields){
-			if (error){
-				console.log(error);
-				res.send({"code":400, "message":"Post create failed"});
-			} else {res.send({"code":200, "message": "Post created successfully"})}
-		}
-		)
-});
-
-
 app.post('/friend/add', function(req,res){
 	var me = req.body.email;
 	var target = req.body.targetEmail;
@@ -215,6 +194,68 @@ app.post('/friend/remove', function(req,res){
 		}
 	);
 });
+
+app.post('/post/add', function(req,res){
+	var email = req.body.email;
+	var title = req.body.title;
+	var content = req.body.content;
+	var date = new Date().toISOString().slice(0, 19).replace('T', ' ');
+	var photo1 = req.body.photo1;
+	var photo2 = null;
+	var photo3 = null;
+	connection.query("INSERT INTO posts (email, title, content, date, photo1, photo2, photo3) VALUES (?,?,?,?,?,?,?)",
+		[email, title, content, date, photo1, photo2, photo3],
+		function(error, results, fields){
+			if (error){
+				console.log(error);
+				res.send({"code":400, "message":"Post create failed"});
+			} else {res.send({"code":200, "message": "Post created successfully"})}
+		});
+});
+
+
+app.post('/myfeed', function(req,res){
+	var me = req.body.email;
+	connection.query(`SELECT * FROM posts WHERE email=?`,[me],
+		function(error, results, fields){
+			if(error){
+				console.log(error);
+				res.send({"code":400, "message":"fail"});
+			} else {
+				let array = [];
+				results.forEach((row)=>array.push({
+					email: row.email,
+					title: row.title,
+					content: row.content,
+					date: row.date,
+					photo1: row.photo1,
+					photo2: row.photo2,
+					photo3: row.photo3
+				})
+				);
+				res.send({"code":200, feed:array});
+			}
+		}
+	);
+});
+
+app.post('/feed', async (req,res)=>{
+	try{
+		const me = req.body.email;
+		var rows = await connection.query(`SELECT * FROM friends WHERE me=?`, me);
+		console.log(rows);
+	} catch (error){
+		console.log('error');
+	}
+});
+
+
+	// results.forEach(async (row)=>{
+	// 				const email = row.target;
+	// 				console.log(email);
+	// 				var [rows] = await conn.query(`SELECT * FROM posts WHERE email=?`,email);
+	// 				console.log(rows);
+	// });
 
 
 app.get('/', function(req,res){
