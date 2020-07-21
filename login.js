@@ -45,8 +45,6 @@ var connection = mysql.createPool({
 	database: 'nodelogin'
 });
 
-connection.connect();
-
 app.use(bodyParser.urlencoded({extended : true}));
 app.use(bodyParser.json());
 
