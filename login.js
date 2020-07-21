@@ -223,18 +223,39 @@ app.post('/post/add', function(req,res){
 	var email = req.body.email;
 	var title = req.body.title;
 	var content = req.body.content;
-	var date = new Date().toISOString().slice(0, 19).replace('T', ' ');
+	var date = Math.floor(new Date() / 1000);
 	var photo1 = req.body.photo1;
 	var photo2 = null;
 	var photo3 = null;
-	connection.query("INSERT INTO posts (email, title, content, date, photo1, photo2, photo3) VALUES (?,?,?,?,?,?,?)",
-		[email, title, content, date, photo1, photo2, photo3],
+	connection.query("SELECT date FROM posts WHERE email=?", [email],
 		function(error, results, fields){
 			if (error){
-				console.log(error);
 				res.send({"code":400, "message":"Post create failed"});
-			} else {res.send({"code":200, "message": "Post created successfully"})}
-		});
+			} else {
+				var permit = false;
+				if(results.length == 0) permit = true;
+				else{
+					var maxdate = 0;
+					for (const row of results){
+						if (maxdate < row.date) maxdate = row.date;
+					}
+					if (date - maxdate > 86400) permit = true;
+				}
+
+				if (!permit){ res.send({"code":401, "message":"Only one post per day!"});
+				} else {
+					connection.query("INSERT INTO posts (email, title, content, date, photo1, photo2, photo3) VALUES (?,?,?,?,?,?,?)",
+					[email, title, content, date, photo1, photo2, photo3],
+					function(error, results, fields){
+						if (error){
+							console.log(error);
+							res.send({"code":400, "message":"Post create failed"});
+						} else {res.send({"code":200, "message": "Post created successfully"})}
+					});
+				}
+			}
+		}
+	)
 });
 
 

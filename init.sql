@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS `posts` (
   `email` varchar(127) NOT NULL,
   `title` varchar(127) NOT NULL,
   `content` varchar(1023) NOT NULL,
-  `date` DATETIME NOT NULL,
+  `date` INT NOT NULL,
   `photo1` varchar(255),
   `photo2` varchar(255),
   `photo3` varchar(255)
