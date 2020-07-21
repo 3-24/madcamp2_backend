@@ -7,6 +7,7 @@ var mime = require('mime');
 var fs = require('fs');
 var mysql = require('mysql');
 var multer = require('multer');
+const util = require('util');
 var storage = multer.diskStorage({
 	destination: function (req, file, cb){
 		cb(null, 'uploads')
@@ -178,6 +179,31 @@ app.post('/friend/list', function(req,res){
 	)
 });
 
+app.post('/friend/info', async function(req,res){
+	var me = req.body.email;
+	const query = util.promisify(connection.query).bind(connection);
+	try{
+		var rows = await query(`SELECT * FROM friends WHERE me=?`, [me]);
+		let infos = [];
+		for (const row of rows){
+			const email = row.target;
+			var rows2 = await query(`SELECT * FROM accounts WHERE email=?`,[email]);
+			var row2 = rows2[0]
+			infos.push({
+				"email": email,
+				"nickname": row2.nickname,
+				"profile_photo": row2.profile_photo,
+				"intro": row2.intro
+			})
+		}
+		res.send({"code":200, "result":infos});
+	} catch (error){
+		console.log(error);
+		res.send({"code":400})
+	}
+});
+
+
 app.post('/friend/remove', function(req,res){
 	var me = req.body.email;
 	var target = req.body.targetEmail;
@@ -231,22 +257,21 @@ app.post('/myfeed', function(req,res){
 					photo3: row.photo3
 				})
 				);
-				res.send({"code":200, feed:array});
+				res.send({"code":200, "feed":array});
 			}
 		}
 	);
 });
 
 app.post('/feed', async (req,res)=>{
-	const util = require('util');
 	const query = util.promisify(connection.query).bind(connection);
 	try{
 		const me = req.body.email;
-		var rows = await query(`SELECT * FROM friends WHERE me=?`, me);
+		var rows = await query(`SELECT * FROM friends WHERE me=?`, [me]);
 		let posts = [];
 		for (const row of rows){
 			const email = row.target;
-			var rows2 = await query(`SELECT * FROM posts WHERE email=?`,email);
+			var rows2 = await query(`SELECT * FROM posts WHERE email=?`,[email]);
 			for (const row2 of rows2){
 				posts.push({email: row2.email, title: row2.title,
 					content: row2.content, date: row2.date,
@@ -258,7 +283,7 @@ app.post('/feed', async (req,res)=>{
 		}
 		res.send({"code":200, "feed":posts});
 	} catch (error){
-		console.log('error');
+		console.log(error);
 		res.send({"code":400})
 	}
 });
