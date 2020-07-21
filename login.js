@@ -5,7 +5,6 @@ var app = express();
 var path = require('path');
 var mime = require('mime');
 var fs = require('fs');
-
 var mysql = require('mysql');
 var multer = require('multer');
 var storage = multer.diskStorage({
@@ -38,10 +37,11 @@ var storage = multer.diskStorage({
 
 var upload = multer({storage: storage});
 
-var connection = mysql.createConnection({
+var connection = mysql.createPool({
+	connectionLimit: 10,
 	host: 'localhost',
 	user: 'root',
-	password: 'root',
+	password: 'MyNewPass',
 	database: 'nodelogin'
 });
 
