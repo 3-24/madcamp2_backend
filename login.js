@@ -123,7 +123,7 @@ app.post('/profile/set', function(req,res){
 	var nickname = req.body.nickname;
 	var profile_photo = req.body.profile_photo;
 	var intro = req.body.intro;
-	connection.query('UPDATE accounts SET nickname=? profile_photo=? intro=? WHERE email=?',
+	connection.query("UPDATE accounts SET nickname=?, profile_photo=?, intro=? WHERE email=?",
 		[nickname, profile_photo, intro, email],
 		function(error, results, fields){
 			if (error){
@@ -133,7 +133,7 @@ app.post('/profile/set', function(req,res){
 		});
 });
 
-app.post('/image_upload', upload.single('image'), function(req,res){
+app.post('/image_upload', upload.single('photo'), function(req,res){
 	res.send({"code":200, "name":req.file.filename});
 })
 
