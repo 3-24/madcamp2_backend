@@ -240,23 +240,30 @@ app.post('/myfeed', function(req,res){
 });
 
 app.post('/feed', async (req,res)=>{
+	const util = require('util');
+	const query = util.promisify(connection.query).bind(connection);
 	try{
 		const me = req.body.email;
-		var rows = await connection.query(`SELECT * FROM friends WHERE me=?`, me);
-		console.log(rows);
+		var rows = await query(`SELECT * FROM friends WHERE me=?`, me);
+		let posts = [];
+		for (const row of rows){
+			const email = row.target;
+			var rows2 = await query(`SELECT * FROM posts WHERE email=?`,email);
+			for (const row2 of rows2){
+				posts.push({email: row2.email, title: row2.title,
+					content: row2.content, date: row2.date,
+					photo1: row2.photo1, photo2:row2.photo2,
+					photo3: row2.photo3
+				})
+				
+			}
+		}
+		res.send({"code":200, "feed":posts});
 	} catch (error){
 		console.log('error');
+		res.send({"code":400})
 	}
 });
-
-
-	// results.forEach(async (row)=>{
-	// 				const email = row.target;
-	// 				console.log(email);
-	// 				var [rows] = await conn.query(`SELECT * FROM posts WHERE email=?`,email);
-	// 				console.log(rows);
-	// });
-
 
 app.get('/', function(req,res){
 	res.json({'message':'Welcome to madcamp2 backend server!'});
